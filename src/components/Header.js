@@ -1,71 +1,99 @@
 import React from 'react';
-import { useNavigate } from 'react-router';
-import { Button, Container, Nav, Navbar, NavItem } from 'react-bootstrap';
-import { Link } from 'react-router-dom';
-import { AuthService } from '../services/auth.service';
+import {
+	Badge,
+	ListGroup,
+	Offcanvas,
+	Button,
+	ButtonGroup,
+	Container,
+	Navbar,
+	Nav,
+	NavDropdown,
+} from 'react-bootstrap';
 import { useDispatch, useSelector } from 'react-redux';
+import { Link, useNavigate } from 'react-router-dom';
+import { clearCart, removeFromCart } from '../store/actions/cart.actions';
 import { toggleMenu } from '../store/actions/sidemenu.actions';
-
-// bgColor component içerine dışarıdan gönderilen değerlere props ismini veririz.
-// props html elementin attribute karşılık gelir. <a href="wwww.a.com"></a>
-
-// { bg, variant } props denk gelir. props da özel bir keyword. componente gönderilen geçirilen değerlere karşılık gelir.
-
-function Header({ bg, variant, menus = [], homePageUrl }) {
-	const username = AuthService.Username();
+import { AuthService } from '../services/auth.service';
+function Header({ bg, variant, menus, homePageUrl, isAdmin = false }) {
+	const userName = AuthService.Username();
 	const isAuthenticated = AuthService.isAuthenticated();
-	const navigator = useNavigate();
-	const logout = () => {
-		AuthService.logout((response) => {
-			navigator(response.url);
-		});
-	};
+	const navigate = useNavigate();
+
+	const cart = useSelector((store) => store.cartState.cartItems);
+	const cartTotal = useSelector((store) => store.cartState.total);
 	const sideMenuState = useSelector((store) => store.sideMenuState);
 	const dispatch = useDispatch();
+
+	const logout = async () => {
+		AuthService.logout((response) => {
+			navigate(response.url);
+		});
+	};
+
 	return (
 		<>
 			<Navbar bg={bg} variant={variant}>
 				<Container>
 					<Navbar.Brand>
 						<Link className="nav-item nav-link" to={homePageUrl}>
-							Ana Sayfa
+							{' '}
+							Nbuy Oglen
 						</Link>
 					</Navbar.Brand>
 					<Nav className="me-auto">
 						{menus.map((item) => {
 							return (
 								<Link
+									key={item.url}
 									className="nav-item nav-link"
-									key={item?.url}
-									to={item?.url}
+									to={item.url}
 								>
-									{item?.title}
+									{item?.title}{' '}
 								</Link>
 							);
 						})}
-						{isAuthenticated && (
-							<>
-								<Nav.Item className="nav-item nav-link">
-									<Nav.Link>{username}</Nav.Link>
-								</Nav.Item>
-								<Button onClick={logout}>Çıkış Yap</Button>
-							</>
-						)}
-						{!isAuthenticated && (
-							<>
-								<NavItem>
-									<Nav.Link to="/login"></Nav.Link>
-								</NavItem>
-							</>
-						)}
-						<NavItem>
-							<Nav.Link
-								onClick={() => dispatch(toggleMenu(sideMenuState.visible))}
-							>
-								Sepeti Aç
-							</Nav.Link>
-						</NavItem>
 					</Nav>
+					{isAuthenticated && (
+						<div className="ms-auto">
+							{/* <Nav.Link
+								onClick={() => {
+									dispatch(toggle(sideMenuState.visible));
+								}}
+								style={{ color: 'indianred', justifyContent: 'center' }}
+							>
+								Sepet Toplam :{cartTotal.toFixed(2)}
+							</Nav.Link> */}
+
+							<Nav style={{ color: 'indianred' }}>
+								<Navbar.Collapse>
+									<Nav>
+										<NavDropdown title={userName} menuVariant="light">
+											<NavDropdown.Item onClick={logout}>
+												Oturumu Kapat
+											</NavDropdown.Item>
+										</NavDropdown>
+									</Nav>
+								</Navbar.Collapse>
+
+								{!isAdmin && (
+									<Nav.Link
+										onClick={() => {
+											dispatch(toggleMenu(sideMenuState.visible));
+										}}
+										style={{ color: 'indianred', justifyContent: 'center' }}
+									>
+										<i className="bi bi-cart"></i> {cartTotal.toFixed(2)}
+									</Nav.Link>
+								)}
+							</Nav>
+						</div>
+					)}
+					{!isAuthenticated && (
+						<Nav style={{ color: 'indianred' }} className="ms-auto">
+							<Link to="/login">Oturum Aç</Link>
+						</Nav>
+					)}
 				</Container>
 			</Navbar>
 		</>
@@ -79,4 +107,9 @@ export default Header;
 Header.defaultProps = {
 	bg: 'light',
 	variant: 'light',
+	menus: [
+		{ title: 'Anasayfa', url: 'home' },
+		{ title: 'Hakkımızda', url: 'about' },
+	],
+	homePageUrl: '/home',
 };
