@@ -5,12 +5,22 @@ import { TokenService } from './token.service';
 export const AuthService = {};
 
 AuthService.isAuthenticated = () => {
-	return localStorage.getItem('access_token') ? true : false;
+	if (
+		localStorage.getItem('access_token') == undefined &&
+		sessionStorage.getItem('access_token') == undefined
+	)
+		return false;
+
+	return true;
 };
 
-AuthService.Username = () => localStorage.getItem('username');
+AuthService.Username = () => {
+	return localStorage.getItem('username') == undefined
+		? sessionStorage.getItem('username')
+		: localStorage.getItem('username');
+};
 
-AuthService.login = async (username, password, callback) => {
+AuthService.login = async (username, password, rememberMe, callback) => {
 	const param = {
 		username: username,
 		password: password,
@@ -24,7 +34,8 @@ AuthService.login = async (username, password, callback) => {
 		if (response.status === 200) {
 			TokenService.setToken(
 				response.data.accessToken,
-				response.data.refreshToken
+				response.data.refreshToken,
+				rememberMe
 			);
 			callback({ url: '/' }, null);
 		} else {

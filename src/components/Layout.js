@@ -1,5 +1,6 @@
 import React from 'react';
 import { Container } from 'react-bootstrap';
+import CartMenu from './cartMenu';
 import Footer from './Footer';
 import Header from './Header';
 
@@ -32,6 +33,7 @@ function Layout({ children }) {
 			<Container fluid>
 				<main>{children}</main>
 			</Container>
+			<CartMenu />
 			<Footer />
 		</>
 	);

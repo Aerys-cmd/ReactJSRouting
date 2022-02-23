@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router';
 import { Button, Container, Nav, Navbar, NavItem } from 'react-bootstrap';
 import { Link } from 'react-router-dom';
 import { AuthService } from '../services/auth.service';
+import { useDispatch, useSelector } from 'react-redux';
+import { toggleMenu } from '../store/actions/sidemenu.actions';
 
 // bgColor component içerine dışarıdan gönderilen değerlere props ismini veririz.
 // props html elementin attribute karşılık gelir. <a href="wwww.a.com"></a>
@@ -18,6 +20,8 @@ function Header({ bg, variant, menus = [], homePageUrl }) {
 			navigator(response.url);
 		});
 	};
+	const sideMenuState = useSelector((store) => store.sideMenuState);
+	const dispatch = useDispatch();
 	return (
 		<>
 			<Navbar bg={bg} variant={variant}>
@@ -48,10 +52,19 @@ function Header({ bg, variant, menus = [], homePageUrl }) {
 							</>
 						)}
 						{!isAuthenticated && (
-							<NavItem>
-								<Nav.Link to="/login"></Nav.Link>
-							</NavItem>
+							<>
+								<NavItem>
+									<Nav.Link to="/login"></Nav.Link>
+								</NavItem>
+							</>
 						)}
+						<NavItem>
+							<Nav.Link
+								onClick={() => dispatch(toggleMenu(sideMenuState.visible))}
+							>
+								Sepeti Aç
+							</Nav.Link>
+						</NavItem>
 					</Nav>
 				</Container>
 			</Navbar>
